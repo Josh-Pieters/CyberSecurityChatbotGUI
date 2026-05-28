@@ -7,12 +7,239 @@
         WindowStartupLocation="CenterScreen"
         Background="#0D1117">
 
+    <Window.Resources>
+        <!-- Send button style -->
+        <Style x:Key="SendBtn" TargetType="Button">
+            <Setter Property="Background"      Value="#00D4FF"/>
+            <Setter Property="Foreground"      Value="#0D1117"/>
+            <Setter Property="FontWeight"      Value="Bold"/>
+            <Setter Property="FontSize"        Value="14"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor"          Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="10"
+                                Padding="18,10">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#00B8D9"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#0099B8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Quick-topic chip style -->
+        <Style x:Key="ChipBtn" TargetType="Button">
+            <Setter Property="Background"      Value="#1C2333"/>
+            <Setter Property="Foreground"      Value="#00D4FF"/>
+            <Setter Property="FontSize"        Value="11"/>
+            <Setter Property="BorderBrush"     Value="#00D4FF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor"          Value="Hand"/>
+            <Setter Property="Margin"          Value="3,2"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="12"
+                                Padding="10,5">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#263450"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
     <Grid>
-        <TextBlock Text="CyberBot is loading..."
-                   Foreground="#00D4FF"
-                   FontSize="20"
-                   FontFamily="Consolas"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Header -->
+            <RowDefinition Height="Auto"/>
+            <!-- ASCII banner -->
+            <RowDefinition Height="*"/>
+            <!-- Chat messages -->
+            <RowDefinition Height="Auto"/>
+            <!-- Chips -->
+            <RowDefinition Height="Auto"/>
+            <!-- Input -->
+            <RowDefinition Height="Auto"/>
+            <!-- Status bar -->
+        </Grid.RowDefinitions>
+
+        <!-- HEADER -->
+        <Border Grid.Row="0"
+                Background="#161B22"
+                BorderBrush="#30363D"
+                BorderThickness="0,0,0,1"
+                Padding="20,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="🛡️" FontSize="26" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <StackPanel>
+                        <TextBlock Text="CyberBot"
+                                   Foreground="#00D4FF"
+                                   FontSize="20"
+                                   FontWeight="Bold"
+                                   FontFamily="Consolas"/>
+                        <TextBlock Text="Cybersecurity Awareness Assistant"
+                                   Foreground="#8B949E"
+                                   FontSize="11"
+                                   FontFamily="Consolas"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Ellipse Width="8" Height="8" Fill="#39D353" Margin="0,0,6,0"/>
+                    <TextBlock Text="Online"
+                               Foreground="#39D353"
+                               FontSize="12"
+                               FontFamily="Consolas"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ASCII BANNER -->
+        <Border Grid.Row="1" Background="#0D1117" Padding="16,10,16,6">
+            <TextBlock FontFamily="Consolas"
+                       FontSize="7"
+                       Foreground="#1C4F6E"
+                       HorizontalAlignment="Center"
+                       Text="██████╗██╗   ██╗██████╗ ███████╗██████╗ ██████╗  ██████╗ ████████╗&#10; ██╔════╝╚██╗ ██╔╝██╔══██╗██╔════╝██╔══██╗██╔══██╗██╔═══██╗╚══██╔══╝&#10; ██║      ╚████╔╝ ██████╔╝█████╗  ██████╔╝██████╔╝██║   ██║   ██║&#10; ██║       ╚██╔╝  ██╔══██╗██╔══╝  ██╔══██╗██╔══██╗██║   ██║   ██║&#10; ╚██████╗   ██║   ██████╔╝███████╗██║  ██║██████╔╝╚██████╔╝   ██║&#10;  ╚═════╝   ╚═╝   ╚═════╝ ╚══════╝╚═╝  ╚═╝╚═════╝  ╚═════╝   ╚═╝"/>
+        </Border>
+
+        <!-- CHAT AREA -->
+        <Border Grid.Row="2"
+                Margin="12,8,12,0"
+                Background="#161B22"
+                CornerRadius="10"
+                BorderBrush="#30363D"
+                BorderThickness="1">
+            <ScrollViewer x:Name="ChatScroll"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          Padding="8">
+                <StackPanel x:Name="ChatPanel" Margin="4"/>
+            </ScrollViewer>
+        </Border>
+
+        <!-- QUICK TOPIC CHIPS -->
+        <Border Grid.Row="3"
+                Margin="12,8,12,0"
+                Padding="8,6"
+                Background="#161B22"
+                CornerRadius="8"
+                BorderBrush="#30363D"
+                BorderThickness="1">
+            <WrapPanel>
+                <TextBlock Text="Quick topics: "
+                           Foreground="#8B949E"
+                           FontSize="11"
+                           FontFamily="Consolas"
+                           VerticalAlignment="Center"
+                           Margin="4,0,6,0"/>
+                <Button Content="🔑 Password"      Style="{StaticResource ChipBtn}" Click="Chip_Click" Tag="password"/>
+                <Button Content="🎣 Phishing"       Style="{StaticResource ChipBtn}" Click="Chip_Click" Tag="phishing"/>
+                <Button Content="🌐 Safe Browsing"  Style="{StaticResource ChipBtn}" Click="Chip_Click" Tag="safe browsing"/>
+                <Button Content="🦠 Malware"        Style="{StaticResource ChipBtn}" Click="Chip_Click" Tag="malware"/>
+                <Button Content="🎭 Social Eng."    Style="{StaticResource ChipBtn}" Click="Chip_Click" Tag="social engineering"/>
+                <Button Content="📱 2FA"            Style="{StaticResource ChipBtn}" Click="Chip_Click" Tag="2fa"/>
+                <Button Content="🔒 Privacy"        Style="{StaticResource ChipBtn}" Click="Chip_Click" Tag="privacy"/>
+                <Button Content="⚠️ Scams"          Style="{StaticResource ChipBtn}" Click="Chip_Click" Tag="scam"/>
+            </WrapPanel>
+        </Border>
+
+        <!-- INPUT AREA -->
+        <Border Grid.Row="4"
+                Margin="12,8,12,8"
+                Background="#1C2333"
+                CornerRadius="10"
+                BorderBrush="#30363D"
+                BorderThickness="1"
+                Padding="10,8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBox x:Name="InputBox"
+                         Grid.Column="0"
+                         Background="Transparent"
+                         Foreground="#E6EDF3"
+                         CaretBrush="#00D4FF"
+                         BorderThickness="0"
+                         FontSize="14"
+                         FontFamily="Consolas"
+                         VerticalAlignment="Center"
+                         KeyDown="InputBox_KeyDown"
+                         TextChanged="InputBox_TextChanged"
+                         MaxLength="500"
+                         Padding="4,4,8,4"/>
+
+                <!-- Placeholder -->
+                <TextBlock x:Name="Placeholder"
+                           Grid.Column="0"
+                           Text="Ask me about cybersecurity..."
+                           Foreground="#4A5568"
+                           FontSize="14"
+                           FontFamily="Consolas"
+                           VerticalAlignment="Center"
+                           Margin="8,0,0,0"
+                           IsHitTestVisible="False"/>
+
+                <Button x:Name="SendButton"
+                        Grid.Column="1"
+                        Content="Send ➤"
+                        Style="{StaticResource SendBtn}"
+                        Click="SendButton_Click"/>
+            </Grid>
+        </Border>
+
+        <!-- STATUS BAR -->
+        <Border Grid.Row="5"
+                Background="#161B22"
+                BorderBrush="#30363D"
+                BorderThickness="0,1,0,0"
+                Padding="16,5">
+            <Grid>
+                <TextBlock x:Name="StatusText"
+                           Foreground="#8B949E"
+                           FontSize="11"
+                           FontFamily="Consolas"
+                           HorizontalAlignment="Left"
+                           Text="🔒 Protecting South African Citizens Online"/>
+                <TextBlock x:Name="CharCount"
+                           Foreground="#4A5568"
+                           FontSize="11"
+                           FontFamily="Consolas"
+                           HorizontalAlignment="Right"
+                           Text="0 / 500"/>
+            </Grid>
+        </Border>
     </Grid>
 </Window>
