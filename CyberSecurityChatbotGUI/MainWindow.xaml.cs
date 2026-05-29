@@ -106,16 +106,26 @@ namespace CyberSecurityChatbot
             if (string.IsNullOrWhiteSpace(input))
                 return;
 
-            // Show what the user typed
+            // Show the user's message
             AddUserMessage(input);
 
             // Clear the input box
             InputBox.Clear();
 
+            // Get the response from the engine
             string response = _engine.GetResponse(input);
+
+            // Show the bot's response
             AddBotMessage(response);
 
-            // Scroll to the bottom of the chat
+            // Update the status bar with the last topic if there was one
+            if (_engine.Memory.HasMemory("favourite_topic"))
+            {
+                string topic = _engine.Memory.Recall("favourite_topic");
+                StatusText.Text = "🔒 " + _userName + " | Favourite topic: " + topic;
+            }
+
+            // Scroll to the bottom
             ChatScroll.ScrollToEnd();
         }
 

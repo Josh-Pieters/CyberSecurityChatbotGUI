@@ -19,24 +19,23 @@ namespace CyberSecurityChatbot
         // Main method — takes user input and returns a response
         public string GetResponse(string input)
         {
-            // If the input is empty return a fallback message
-            if (string.IsNullOrWhiteSpace(input))
+            // Step 1 - Validate the input first
+            string validationError = ErrorHandler.ValidateInput(input);
+            if (validationError != string.Empty)
             {
-                return "🤔 I didn't catch that. Could you rephrase?\n" +
-                       "💡 Try typing 'help' to see what I can do.";
+                return validationError;
             }
 
-            // Step 1 - Detect the user's sentiment e.g. worried, curious
+            // Step 2 - Detect the user's sentiment e.g. worried, curious
             Sentiment sentiment = SentimentDetector.Detect(input);
             string empathy = SentimentDetector.GetEmpathyPrefix(sentiment);
 
-            // Step 2 - Check if the user is expressing an interest in a topic
+            // Step 3 - Check if the user is expressing an interest in a topic
             // e.g. "I'm interested in privacy"
             string learnedTopic = Memory.TryLearnInterest(input);
 
             if (learnedTopic != string.Empty)
             {
-                // Acknowledge the interest and give a tip on that topic
                 string ack = "💾 Great! I'll remember that you're interested in " + learnedTopic + ".\n" +
                              "It's a crucial part of staying safe online.\n\n";
 
@@ -48,7 +47,7 @@ namespace CyberSecurityChatbot
                 return ack + tip + "\n\n💬 Type 'tell me more' for another tip!";
             }
 
-            // Step 3 - Check for follow-up requests e.g. "tell me more"
+            // Step 4 - Check for follow-up requests e.g. "tell me more"
             if (IsFollowUp(input))
             {
                 if (_lastTopic != string.Empty)
@@ -63,7 +62,7 @@ namespace CyberSecurityChatbot
                 }
             }
 
-            // Step 4 - Check exact match questions e.g. "how are you"
+            // Step 5 - Check exact match questions e.g. "how are you"
             foreach (KeyValuePair<string, string> entry in ResponseBank.ExactResponses)
             {
                 if (input.IndexOf(entry.Key, StringComparison.OrdinalIgnoreCase) >= 0)
@@ -72,34 +71,37 @@ namespace CyberSecurityChatbot
                 }
             }
 
-            // Step 5 - Check for help command
+            // Step 6 - Check for help command
             if (input.Equals("help", StringComparison.OrdinalIgnoreCase))
             {
                 return ResponseBank.HelpResponse;
             }
 
-            // Step 6 - Check for keyword topics e.g. "password", "phishing"
+            // Step 7 - Check for keyword topics e.g. "password", "phishing"
             foreach (KeyValuePair<string, List<string>> entry in ResponseBank.TopicResponses)
             {
                 if (input.IndexOf(entry.Key, StringComparison.OrdinalIgnoreCase) >= 0)
                 {
-                    // Remember this topic for follow-up requests
                     _lastTopic = entry.Key;
 
-                    // Use the delegate to pick a random response
                     ResponseSelector selector = ResponseBank.GetRandomPicker(entry.Key);
                     string response = selector(input);
 
-                    // Add empathy prefix and personalised memory hint
                     string hint = Memory.GetPersonalisedHint();
 
                     return empathy + hint + response + "\n\n💬 Type 'tell me more' for another tip!";
                 }
             }
 
-            // Step 7 - Nothing matched, return a helpful fallback
-            return "🤔 I'm not sure I understand that.\n" +
-                   "💡 Try typing 'help' to see a list of topics I can assist with.";
+            // Step 8 - Check for typos before giving up
+            string typoSuggestion = ErrorHandler.GetTypoSuggestion(input);
+            if (typoSuggestion != string.Empty)
+            {
+                return typoSuggestion;
+            }
+
+            // Step 9 - Nothing matched, return a random fallback message
+            return ErrorHandler.GetFallback();
         }
 
         // Checks if the user is asking for a follow-up on the last topic
