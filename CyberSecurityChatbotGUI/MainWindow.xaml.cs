@@ -13,6 +13,7 @@ namespace CyberSecurityChatbot
     {
         // Stores the user's name entered in the dialog
         private string _userName = string.Empty;
+        private ChatbotEngine _engine = null!;
 
         public MainWindow()
         {
@@ -51,6 +52,8 @@ namespace CyberSecurityChatbot
                 _userName = "User";
             else
                 _userName = dialog.EnteredName;
+
+            _engine = new ChatbotEngine(_userName);
 
             // Show welcome message in the chat
             AddBotMessage("👋 Hello, " + _userName + "! I'm CyberBot — your cybersecurity assistant.\n\nLogic coming soon — stay tuned!");
@@ -109,8 +112,8 @@ namespace CyberSecurityChatbot
             // Clear the input box
             InputBox.Clear();
 
-            // Placeholder response — will be replaced in Commit 3
-            AddBotMessage("🤖 Bot logic coming in the next commit!");
+            string response = _engine.GetResponse(input);
+            AddBotMessage(response);
 
             // Scroll to the bottom of the chat
             ChatScroll.ScrollToEnd();
