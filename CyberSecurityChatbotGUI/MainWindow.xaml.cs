@@ -108,7 +108,7 @@ namespace CyberSecurityChatbot
 
             // Show the user's message
             AddUserMessage(input);
-
+            
             // Clear the input box
             InputBox.Clear();
 
