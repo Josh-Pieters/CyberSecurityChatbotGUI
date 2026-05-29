@@ -5,18 +5,18 @@ namespace CyberSecurityChatbot
 {
     public class ChatbotEngine
     {
-        // Stores the user's name
-        private string _userName = string.Empty;
+        // Memory stores the user's name and interests
+        public MemoryStore Memory = new MemoryStore();
 
-        // Remembers the last topic so follow-ups work
+        // Remembers the last topic discussed for follow-ups
         private string _lastTopic = string.Empty;
 
         public ChatbotEngine(string userName)
         {
-            _userName = userName;
+            Memory.UserName = userName;
         }
 
-        // Takes user input and returns a response
+        // Main method — takes user input and returns a response
         public string GetResponse(string input)
         {
             // If the input is empty return a fallback message
@@ -26,13 +26,35 @@ namespace CyberSecurityChatbot
                        "💡 Try typing 'help' to see what I can do.";
             }
 
-            // Check for follow-up requests e.g. "tell me more"
+            // Step 1 - Detect the user's sentiment e.g. worried, curious
+            Sentiment sentiment = SentimentDetector.Detect(input);
+            string empathy = SentimentDetector.GetEmpathyPrefix(sentiment);
+
+            // Step 2 - Check if the user is expressing an interest in a topic
+            // e.g. "I'm interested in privacy"
+            string learnedTopic = Memory.TryLearnInterest(input);
+
+            if (learnedTopic != string.Empty)
+            {
+                // Acknowledge the interest and give a tip on that topic
+                string ack = "💾 Great! I'll remember that you're interested in " + learnedTopic + ".\n" +
+                             "It's a crucial part of staying safe online.\n\n";
+
+                ResponseSelector selector = ResponseBank.GetRandomPicker(learnedTopic);
+                string tip = selector(input);
+
+                _lastTopic = learnedTopic;
+
+                return ack + tip + "\n\n💬 Type 'tell me more' for another tip!";
+            }
+
+            // Step 3 - Check for follow-up requests e.g. "tell me more"
             if (IsFollowUp(input))
             {
                 if (_lastTopic != string.Empty)
                 {
                     string moreTip = ResponseBank.PickRandom(_lastTopic);
-                    return "🔄 Here's another tip on " + _lastTopic + ":\n\n" + moreTip;
+                    return empathy + "🔄 Here's another tip on " + _lastTopic + ":\n\n" + moreTip;
                 }
                 else
                 {
@@ -41,22 +63,22 @@ namespace CyberSecurityChatbot
                 }
             }
 
-            // Step 2 - Check exact match questions e.g. "how are you"
+            // Step 4 - Check exact match questions e.g. "how are you"
             foreach (KeyValuePair<string, string> entry in ResponseBank.ExactResponses)
             {
                 if (input.IndexOf(entry.Key, StringComparison.OrdinalIgnoreCase) >= 0)
                 {
-                    return entry.Value;
+                    return empathy + entry.Value;
                 }
             }
 
-            // Step 3 - Check for help command
+            // Step 5 - Check for help command
             if (input.Equals("help", StringComparison.OrdinalIgnoreCase))
             {
                 return ResponseBank.HelpResponse;
             }
 
-            // Step 4 - Check for keyword topics e.g. "password", "phishing"
+            // Step 6 - Check for keyword topics e.g. "password", "phishing"
             foreach (KeyValuePair<string, List<string>> entry in ResponseBank.TopicResponses)
             {
                 if (input.IndexOf(entry.Key, StringComparison.OrdinalIgnoreCase) >= 0)
@@ -68,11 +90,14 @@ namespace CyberSecurityChatbot
                     ResponseSelector selector = ResponseBank.GetRandomPicker(entry.Key);
                     string response = selector(input);
 
-                    return response + "\n\n💬 Want to know more? Type 'tell me more' or ask about another topic!";
+                    // Add empathy prefix and personalised memory hint
+                    string hint = Memory.GetPersonalisedHint();
+
+                    return empathy + hint + response + "\n\n💬 Type 'tell me more' for another tip!";
                 }
             }
 
-            // Step 5 - Nothing matched, return a helpful fallback
+            // Step 7 - Nothing matched, return a helpful fallback
             return "🤔 I'm not sure I understand that.\n" +
                    "💡 Try typing 'help' to see a list of topics I can assist with.";
         }
