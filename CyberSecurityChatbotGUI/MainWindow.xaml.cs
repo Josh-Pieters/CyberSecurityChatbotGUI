@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CyberSecurityChatbotGUI;
+using System;
 using System.IO;
 using System.Media;
 using System.Windows;
@@ -60,6 +61,12 @@ namespace CyberSecurityChatbot
 
             // Update the status bar at the bottom
             StatusText.Text = "🔒 Chatting as " + _userName;
+
+            //Checks if the database is connected and shows a message in the chat
+            if (DatabaseHelper.TestConnection())
+                AddBotMessage("✅ Database connected successfully!");
+            else
+                AddBotMessage("❌ Database connection failed. Check SQL Server is running.");
         }
 
         // Send button clicked
