@@ -67,6 +67,69 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!-- Action button style for task buttons -->
+        <Style x:Key="ActionBtn" TargetType="Button">
+            <Setter Property="Background"      Value="#1C2333"/>
+            <Setter Property="Foreground"      Value="#E6EDF3"/>
+            <Setter Property="FontSize"        Value="12"/>
+            <Setter Property="BorderBrush"     Value="#30363D"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor"          Value="Hand"/>
+            <Setter Property="Margin"          Value="4,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Padding="10,6">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#263450"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Tab item style -->
+        <Style x:Key="TabStyle" TargetType="TabItem">
+            <Setter Property="Background"   Value="#161B22"/>
+            <Setter Property="Foreground"   Value="#8B949E"/>
+            <Setter Property="FontFamily"   Value="Consolas"/>
+            <Setter Property="FontSize"     Value="13"/>
+            <Setter Property="Padding"      Value="16,8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border x:Name="TabBorder"
+                                Background="#161B22"
+                                BorderBrush="#30363D"
+                                BorderThickness="0,0,0,2"
+                                Padding="16,10">
+                            <ContentPresenter ContentSource="Header"
+                                              HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="TabBorder" Property="BorderBrush"  Value="#00D4FF"/>
+                                <Setter Property="Foreground" Value="#00D4FF"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="TabBorder" Property="Background" Value="#1C2333"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Grid>
@@ -76,11 +139,7 @@
             <RowDefinition Height="Auto"/>
             <!-- ASCII banner -->
             <RowDefinition Height="*"/>
-            <!-- Chat messages -->
-            <RowDefinition Height="Auto"/>
-            <!-- Chips -->
-            <RowDefinition Height="Auto"/>
-            <!-- Input -->
+            <!-- Tab control -->
             <RowDefinition Height="Auto"/>
             <!-- Status bar -->
         </Grid.RowDefinitions>
@@ -132,96 +191,243 @@
                        Text="██████╗██╗   ██╗██████╗ ███████╗██████╗ ██████╗  ██████╗ ████████╗&#10; ██╔════╝╚██╗ ██╔╝██╔══██╗██╔════╝██╔══██╗██╔══██╗██╔═══██╗╚══██╔══╝&#10; ██║      ╚████╔╝ ██████╔╝█████╗  ██████╔╝██████╔╝██║   ██║   ██║&#10; ██║       ╚██╔╝  ██╔══██╗██╔══╝  ██╔══██╗██╔══██╗██║   ██║   ██║&#10; ╚██████╗   ██║   ██████╔╝███████╗██║  ██║██████╔╝╚██████╔╝   ██║&#10;  ╚═════╝   ╚═╝   ╚═════╝ ╚══════╝╚═╝  ╚═╝╚═════╝  ╚═════╝   ╚═╝"/>
         </Border>
 
-        <!-- CHAT AREA -->
-        <Border Grid.Row="2"
-                Margin="12,8,12,0"
-                Background="#161B22"
-                CornerRadius="10"
-                BorderBrush="#30363D"
-                BorderThickness="1">
-            <ScrollViewer x:Name="ChatScroll"
-                          VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Disabled"
-                          Padding="8">
-                <StackPanel x:Name="ChatPanel" Margin="4"/>
-            </ScrollViewer>
-        </Border>
+        <!-- TAB CONTROL -->
+        <TabControl Grid.Row="2"
+                    Background="#0D1117"
+                    BorderThickness="0"
+                    Padding="0">
 
-        <!-- QUICK TOPIC CHIPS -->
-        <Border Grid.Row="3"
-                Margin="12,8,12,0"
-                Padding="8,6"
-                Background="#161B22"
-                CornerRadius="8"
-                BorderBrush="#30363D"
-                BorderThickness="1">
-            <WrapPanel>
-                <TextBlock Text="Quick topics: "
-                           Foreground="#8B949E"
-                           FontSize="11"
-                           FontFamily="Consolas"
-                           VerticalAlignment="Center"
-                           Margin="4,0,6,0"/>
-                <Button Content="🔑 Password"      Style="{StaticResource ChipBtn}" Click="Chip_Click" Tag="password"/>
-                <Button Content="🎣 Phishing"       Style="{StaticResource ChipBtn}" Click="Chip_Click" Tag="phishing"/>
-                <Button Content="🌐 Safe Browsing"  Style="{StaticResource ChipBtn}" Click="Chip_Click" Tag="safe browsing"/>
-                <Button Content="🦠 Malware"        Style="{StaticResource ChipBtn}" Click="Chip_Click" Tag="malware"/>
-                <Button Content="🎭 Social Eng."    Style="{StaticResource ChipBtn}" Click="Chip_Click" Tag="social engineering"/>
-                <Button Content="📱 2FA"            Style="{StaticResource ChipBtn}" Click="Chip_Click" Tag="2fa"/>
-                <Button Content="🔒 Privacy"        Style="{StaticResource ChipBtn}" Click="Chip_Click" Tag="privacy"/>
-                <Button Content="⚠️ Scams"          Style="{StaticResource ChipBtn}" Click="Chip_Click" Tag="scam"/>
-            </WrapPanel>
-        </Border>
+            <!-- ══ TAB 1: CHAT ══════════════════════════════════════════════ -->
+            <TabItem Header="🤖 Chat" Style="{StaticResource TabStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <!-- Chat messages -->
+                        <RowDefinition Height="Auto"/>
+                        <!-- Chips -->
+                        <RowDefinition Height="Auto"/>
+                        <!-- Input -->
+                    </Grid.RowDefinitions>
 
-        <!-- INPUT AREA -->
-        <Border Grid.Row="4"
-                Margin="12,8,12,8"
-                Background="#1C2333"
-                CornerRadius="10"
-                BorderBrush="#30363D"
-                BorderThickness="1"
-                Padding="10,8">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+                    <!-- Chat area -->
+                    <Border Grid.Row="0"
+                            Margin="12,8,12,0"
+                            Background="#161B22"
+                            CornerRadius="10"
+                            BorderBrush="#30363D"
+                            BorderThickness="1">
+                        <ScrollViewer x:Name="ChatScroll"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled"
+                                      Padding="8">
+                            <StackPanel x:Name="ChatPanel" Margin="4"/>
+                        </ScrollViewer>
+                    </Border>
 
-                <TextBox x:Name="InputBox"
-                         Grid.Column="0"
-                         Background="Transparent"
-                         Foreground="#E6EDF3"
-                         CaretBrush="#00D4FF"
-                         BorderThickness="0"
-                         FontSize="14"
-                         FontFamily="Consolas"
-                         VerticalAlignment="Center"
-                         KeyDown="InputBox_KeyDown"
-                         TextChanged="InputBox_TextChanged"
-                         MaxLength="500"
-                         Padding="4,4,8,4"/>
+                    <!-- Quick topic chips -->
+                    <Border Grid.Row="1"
+                            Margin="12,8,12,0"
+                            Padding="8,6"
+                            Background="#161B22"
+                            CornerRadius="8"
+                            BorderBrush="#30363D"
+                            BorderThickness="1">
+                        <WrapPanel>
+                            <TextBlock Text="Quick topics: "
+                                       Foreground="#8B949E"
+                                       FontSize="11"
+                                       FontFamily="Consolas"
+                                       VerticalAlignment="Center"
+                                       Margin="4,0,6,0"/>
+                            <Button Content="🔑 Password"      Style="{StaticResource ChipBtn}" Click="Chip_Click" Tag="password"/>
+                            <Button Content="🎣 Phishing"       Style="{StaticResource ChipBtn}" Click="Chip_Click" Tag="phishing"/>
+                            <Button Content="🌐 Safe Browsing"  Style="{StaticResource ChipBtn}" Click="Chip_Click" Tag="safe browsing"/>
+                            <Button Content="🦠 Malware"        Style="{StaticResource ChipBtn}" Click="Chip_Click" Tag="malware"/>
+                            <Button Content="🎭 Social Eng."    Style="{StaticResource ChipBtn}" Click="Chip_Click" Tag="social engineering"/>
+                            <Button Content="📱 2FA"            Style="{StaticResource ChipBtn}" Click="Chip_Click" Tag="2fa"/>
+                            <Button Content="🔒 Privacy"        Style="{StaticResource ChipBtn}" Click="Chip_Click" Tag="privacy"/>
+                            <Button Content="⚠️ Scams"          Style="{StaticResource ChipBtn}" Click="Chip_Click" Tag="scam"/>
+                        </WrapPanel>
+                    </Border>
 
-                <!-- Placeholder -->
-                <TextBlock x:Name="Placeholder"
-                           Grid.Column="0"
-                           Text="Ask me about cybersecurity..."
-                           Foreground="#4A5568"
-                           FontSize="14"
-                           FontFamily="Consolas"
-                           VerticalAlignment="Center"
-                           Margin="8,0,0,0"
-                           IsHitTestVisible="False"/>
+                    <!-- Input area -->
+                    <Border Grid.Row="2"
+                            Margin="12,8,12,8"
+                            Background="#1C2333"
+                            CornerRadius="10"
+                            BorderBrush="#30363D"
+                            BorderThickness="1"
+                            Padding="10,8">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
 
-                <Button x:Name="SendButton"
-                        Grid.Column="1"
-                        Content="Send ➤"
-                        Style="{StaticResource SendBtn}"
-                        Click="SendButton_Click"/>
-            </Grid>
-        </Border>
+                            <TextBox x:Name="InputBox"
+                                     Grid.Column="0"
+                                     Background="Transparent"
+                                     Foreground="#E6EDF3"
+                                     CaretBrush="#00D4FF"
+                                     BorderThickness="0"
+                                     FontSize="14"
+                                     FontFamily="Consolas"
+                                     VerticalAlignment="Center"
+                                     KeyDown="InputBox_KeyDown"
+                                     TextChanged="InputBox_TextChanged"
+                                     MaxLength="500"
+                                     Padding="4,4,8,4"/>
+
+                            <TextBlock x:Name="Placeholder"
+                                       Grid.Column="0"
+                                       Text="Ask me about cybersecurity..."
+                                       Foreground="#4A5568"
+                                       FontSize="14"
+                                       FontFamily="Consolas"
+                                       VerticalAlignment="Center"
+                                       Margin="8,0,0,0"
+                                       IsHitTestVisible="False"/>
+
+                            <Button x:Name="SendButton"
+                                    Grid.Column="1"
+                                    Content="Send ➤"
+                                    Style="{StaticResource SendBtn}"
+                                    Click="SendButton_Click"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- ══ TAB 2: TASK ASSISTANT ════════════════════════════════════ -->
+            <TabItem Header="📋 Tasks" Style="{StaticResource TabStyle}">
+                <Grid Margin="12,8,12,8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <!-- Add task form -->
+                        <RowDefinition Height="*"/>
+                        <!-- Task list -->
+                    </Grid.RowDefinitions>
+
+                    <!-- Add task form -->
+                    <Border Grid.Row="0"
+                            Background="#161B22"
+                            CornerRadius="10"
+                            BorderBrush="#30363D"
+                            BorderThickness="1"
+                            Padding="16,12"
+                            Margin="0,0,0,10">
+                        <StackPanel>
+                            <TextBlock Text="➕ Add a Cybersecurity Task"
+                                       Foreground="#00D4FF"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       FontFamily="Consolas"
+                                       Margin="0,0,0,12"/>
+
+                            <!-- Title input -->
+                            <TextBlock Text="Title:"
+                                       Foreground="#8B949E"
+                                       FontSize="12"
+                                       FontFamily="Consolas"
+                                       Margin="0,0,0,4"/>
+                            <Border Background="#1C2333"
+                                    CornerRadius="6"
+                                    BorderBrush="#30363D"
+                                    BorderThickness="1"
+                                    Padding="10,6"
+                                    Margin="0,0,0,10">
+                                <TextBox x:Name="TaskTitleBox"
+                                         Background="Transparent"
+                                         Foreground="#E6EDF3"
+                                         CaretBrush="#00D4FF"
+                                         BorderThickness="0"
+                                         FontSize="13"
+                                         FontFamily="Consolas"
+                                         MaxLength="200"/>
+                            </Border>
+
+                            <!-- Description input -->
+                            <TextBlock Text="Description:"
+                                       Foreground="#8B949E"
+                                       FontSize="12"
+                                       FontFamily="Consolas"
+                                       Margin="0,0,0,4"/>
+                            <Border Background="#1C2333"
+                                    CornerRadius="6"
+                                    BorderBrush="#30363D"
+                                    BorderThickness="1"
+                                    Padding="10,6"
+                                    Margin="0,0,0,10">
+                                <TextBox x:Name="TaskDescriptionBox"
+                                         Background="Transparent"
+                                         Foreground="#E6EDF3"
+                                         CaretBrush="#00D4FF"
+                                         BorderThickness="0"
+                                         FontSize="13"
+                                         FontFamily="Consolas"
+                                         MaxLength="500"/>
+                            </Border>
+
+                            <!-- Reminder input -->
+                            <TextBlock Text="Reminder (optional — e.g. 'in 3 days' or '2026-07-01'):"
+                                       Foreground="#8B949E"
+                                       FontSize="12"
+                                       FontFamily="Consolas"
+                                       Margin="0,0,0,4"/>
+                            <Border Background="#1C2333"
+                                    CornerRadius="6"
+                                    BorderBrush="#30363D"
+                                    BorderThickness="1"
+                                    Padding="10,6"
+                                    Margin="0,0,0,12">
+                                <TextBox x:Name="TaskReminderBox"
+                                         Background="Transparent"
+                                         Foreground="#E6EDF3"
+                                         CaretBrush="#00D4FF"
+                                         BorderThickness="0"
+                                         FontSize="13"
+                                         FontFamily="Consolas"
+                                         MaxLength="100"/>
+                            </Border>
+
+                            <!-- Buttons -->
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="💾 Save Task"
+                                        Style="{StaticResource SendBtn}"
+                                        Click="SaveTask_Click"
+                                        Margin="0,0,8,0"/>
+                                <Button Content="🔄 Refresh List"
+                                        Style="{StaticResource ActionBtn}"
+                                        Click="RefreshTasks_Click"/>
+                            </StackPanel>
+
+                            <!-- Task feedback message -->
+                            <TextBlock x:Name="TaskFeedback"
+                                       Foreground="#39D353"
+                                       FontSize="12"
+                                       FontFamily="Consolas"
+                                       Margin="0,10,0,0"
+                                       Visibility="Collapsed"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Task list -->
+                    <Border Grid.Row="1"
+                            Background="#161B22"
+                            CornerRadius="10"
+                            BorderBrush="#30363D"
+                            BorderThickness="1"
+                            Padding="12">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel x:Name="TaskListPanel"/>
+                        </ScrollViewer>
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
 
         <!-- STATUS BAR -->
-        <Border Grid.Row="5"
+        <Border Grid.Row="3"
                 Background="#161B22"
                 BorderBrush="#30363D"
                 BorderThickness="0,1,0,0"

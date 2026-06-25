@@ -136,6 +136,235 @@ namespace CyberSecurityChatbot
             ChatScroll.ScrollToEnd();
         }
 
+        // Save task button clicked
+        private void SaveTask_Click(object sender, RoutedEventArgs e)
+        {
+            string title = TaskTitleBox.Text.Trim();
+            string description = TaskDescriptionBox.Text.Trim();
+            string reminder = TaskReminderBox.Text.Trim();
+
+            // Validate title and description
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                ShowTaskFeedback("⚠️ Please enter a title for the task.", false);
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(description))
+            {
+                ShowTaskFeedback("⚠️ Please enter a description for the task.", false);
+                return;
+            }
+
+            // Save to database
+            bool saved = DatabaseHelper.AddTask(title, description, reminder);
+
+            if (saved)
+            {
+                ShowTaskFeedback("✅ Task saved successfully!", true);
+
+                // Clear the form
+                TaskTitleBox.Clear();
+                TaskDescriptionBox.Clear();
+                TaskReminderBox.Clear();
+
+                // Refresh the task list
+                LoadTaskList();
+            }
+            else
+            {
+                ShowTaskFeedback("❌ Failed to save task. Check your database connection.", false);
+            }
+        }
+
+        // Refresh task list button clicked
+        private void RefreshTasks_Click(object sender, RoutedEventArgs e)
+        {
+            LoadTaskList();
+            ShowTaskFeedback("🔄 Task list refreshed.", true);
+        }
+
+        // Loads all tasks from the database and displays them
+        private void LoadTaskList()
+        {
+            // Clear the current list
+            TaskListPanel.Children.Clear();
+
+            List<CyberTask> tasks = DatabaseHelper.GetAllTasks();
+
+            // Show a message if there are no tasks yet
+            if (tasks.Count == 0)
+            {
+                TextBlock empty = new TextBlock();
+                empty.Text = "📭 No tasks yet. Add one using the form above!";
+                empty.Foreground = new SolidColorBrush(Color.FromRgb(0x8B, 0x94, 0x9E));
+                empty.FontSize = 13;
+                empty.FontFamily = new FontFamily("Consolas");
+                empty.Margin = new Thickness(8);
+                TaskListPanel.Children.Add(empty);
+                return;
+            }
+
+            // Build a card for each task
+            foreach (CyberTask task in tasks)
+            {
+                Border card = BuildTaskCard(task);
+                TaskListPanel.Children.Add(card);
+            }
+        }
+
+        // Builds a styled card UI element for a single task
+        private Border BuildTaskCard(CyberTask task)
+        {
+            // Card border
+            Border card = new Border();
+            card.Background = new SolidColorBrush(Color.FromRgb(0x1C, 0x23, 0x33));
+            card.CornerRadius = new CornerRadius(8);
+            card.BorderBrush = task.IsCompleted
+                ? new SolidColorBrush(Color.FromRgb(0x39, 0xD3, 0x53))
+                : new SolidColorBrush(Color.FromRgb(0x00, 0xD4, 0xFF));
+            card.BorderThickness = new Thickness(1);
+            card.Padding = new Thickness(14, 10, 14, 10);
+            card.Margin = new Thickness(0, 0, 0, 8);
+
+            // Main stack inside the card
+            StackPanel stack = new StackPanel();
+
+            // Top row — title and status
+            Grid topRow = new Grid();
+            topRow.Margin = new Thickness(0, 0, 0, 6);
+
+            ColumnDefinition col1 = new ColumnDefinition();
+            col1.Width = new GridLength(1, GridUnitType.Star);
+            ColumnDefinition col2 = new ColumnDefinition();
+            col2.Width = GridLength.Auto;
+            topRow.ColumnDefinitions.Add(col1);
+            topRow.ColumnDefinitions.Add(col2);
+
+            // Task title
+            TextBlock titleText = new TextBlock();
+            titleText.Text = (task.IsCompleted ? "✅ " : "⏳ ") + task.Title;
+            titleText.Foreground = task.IsCompleted
+                ? new SolidColorBrush(Color.FromRgb(0x39, 0xD3, 0x53))
+                : new SolidColorBrush(Color.FromRgb(0x00, 0xD4, 0xFF));
+            titleText.FontSize = 14;
+            titleText.FontWeight = FontWeights.Bold;
+            titleText.FontFamily = new FontFamily("Consolas");
+            Grid.SetColumn(titleText, 0);
+
+            // Task ID label
+            TextBlock idText = new TextBlock();
+            idText.Text = "ID: " + task.TaskId;
+            idText.Foreground = new SolidColorBrush(Color.FromRgb(0x4A, 0x55, 0x68));
+            idText.FontSize = 11;
+            idText.FontFamily = new FontFamily("Consolas");
+            idText.VerticalAlignment = VerticalAlignment.Center;
+            Grid.SetColumn(idText, 1);
+
+            topRow.Children.Add(titleText);
+            topRow.Children.Add(idText);
+
+            // Description
+            TextBlock descText = new TextBlock();
+            descText.Text = "📝 " + task.Description;
+            descText.Foreground = new SolidColorBrush(Color.FromRgb(0xE6, 0xED, 0xF3));
+            descText.FontSize = 12;
+            descText.FontFamily = new FontFamily("Consolas");
+            descText.TextWrapping = TextWrapping.Wrap;
+            descText.Margin = new Thickness(0, 0, 0, 4);
+
+            // Reminder
+            TextBlock reminderText = new TextBlock();
+            string reminderDisplay = string.IsNullOrWhiteSpace(task.ReminderDate) ? "None" : task.ReminderDate;
+            reminderText.Text = "⏰ Reminder: " + reminderDisplay;
+            reminderText.Foreground = new SolidColorBrush(Color.FromRgb(0x8B, 0x94, 0x9E));
+            reminderText.FontSize = 11;
+            reminderText.FontFamily = new FontFamily("Consolas");
+            reminderText.Margin = new Thickness(0, 0, 0, 8);
+
+            // Action buttons row
+            StackPanel btnRow = new StackPanel();
+            btnRow.Orientation = Orientation.Horizontal;
+
+            // Only show Complete button if task is not done
+            if (!task.IsCompleted)
+            {
+                Button completeBtn = new Button();
+                completeBtn.Content = "✅ Mark Complete";
+                completeBtn.Style = (Style)FindResource("ActionBtn");
+                completeBtn.Foreground = new SolidColorBrush(Color.FromRgb(0x39, 0xD3, 0x53));
+                completeBtn.Tag = task.TaskId;
+                completeBtn.Click += CompleteTask_Click;
+                btnRow.Children.Add(completeBtn);
+            }
+
+            // Delete button
+            Button deleteBtn = new Button();
+            deleteBtn.Content = "🗑️ Delete";
+            deleteBtn.Style = (Style)FindResource("ActionBtn");
+            deleteBtn.Foreground = new SolidColorBrush(Color.FromRgb(0xFF, 0x6B, 0x6B));
+            deleteBtn.Tag = task.TaskId;
+            deleteBtn.Click += DeleteTask_Click;
+            btnRow.Children.Add(deleteBtn);
+
+            // Add everything to the stack
+            stack.Children.Add(topRow);
+            stack.Children.Add(descText);
+            stack.Children.Add(reminderText);
+            stack.Children.Add(btnRow);
+
+            card.Child = stack;
+            return card;
+        }
+
+        // Mark task as complete button clicked
+        private void CompleteTask_Click(object sender, RoutedEventArgs e)
+        {
+            Button btn = (Button)sender;
+            int taskId = (int)btn.Tag;
+
+            bool success = DatabaseHelper.CompleteTask(taskId);
+
+            if (success)
+            {
+                ShowTaskFeedback("✅ Task marked as complete!", true);
+                LoadTaskList();
+            }
+            else
+            {
+                ShowTaskFeedback("❌ Could not complete task. Try again.", false);
+            }
+        }
+
+        // Delete task button clicked
+        private void DeleteTask_Click(object sender, RoutedEventArgs e)
+        {
+            Button btn = (Button)sender;
+            int taskId = (int)btn.Tag;
+
+            bool success = DatabaseHelper.DeleteTask(taskId);
+
+            if (success)
+            {
+                ShowTaskFeedback("🗑️ Task deleted.", true);
+                LoadTaskList();
+            }
+            else
+            {
+                ShowTaskFeedback("❌ Could not delete task. Try again.", false);
+            }
+        }
+
+        // Shows a feedback message below the task form
+        private void ShowTaskFeedback(string message, bool isSuccess)
+        {
+            TaskFeedback.Text = message;
+            TaskFeedback.Foreground = isSuccess
+                ? new SolidColorBrush(Color.FromRgb(0x39, 0xD3, 0x53))
+                : new SolidColorBrush(Color.FromRgb(0xFF, 0x6B, 0x6B));
+            TaskFeedback.Visibility = Visibility.Visible;
+        }
+
         // Creates and adds a green user message bubble to the chat
         private void AddUserMessage(string text)
         {
