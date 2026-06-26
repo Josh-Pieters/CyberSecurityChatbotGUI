@@ -67,7 +67,7 @@ namespace CyberSecurityChatbot
             ActivityLog.Log("Session started for user: " + _userName);
 
             // Show welcome message in the chat
-            AddBotMessage("👋 Hello, " + _userName + "! I'm CyberBot — your cybersecurity assistant.\n\nLogic coming soon — stay tuned!");
+            AddBotMessage("👋 Hello, " + _userName + "! I'm CyberBot — your cybersecurity assistant.");
 
             // Update the status bar at the bottom
             StatusText.Text = "🔒 Chatting as " + _userName;
