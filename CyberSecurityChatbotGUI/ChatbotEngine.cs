@@ -31,6 +31,12 @@ namespace CyberSecurityChatbot
             NlpIntent intent = NlpProcessor.DetectIntent(input);
             if (intent != NlpIntent.None)
             {
+
+                if (intent == NlpIntent.ShowActivityLog)
+                {
+                    return ActivityLog.GetLogAsString();
+                }
+
                 string nlpResponse = NlpProcessor.BuildIntentResponse(intent, input, Memory.UserName);
                 if (nlpResponse != string.Empty)
                 {

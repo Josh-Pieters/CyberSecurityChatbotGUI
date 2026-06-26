@@ -33,6 +33,8 @@ namespace CyberSecurityChatbot
         {
             PlayVoiceGreeting();
             AskForName();
+            LoadTaskList();
+            LoadActivityLog();
         }
 
         // Plays the WAV greeting file
@@ -61,6 +63,8 @@ namespace CyberSecurityChatbot
                 _userName = dialog.EnteredName;
 
             _engine = new ChatbotEngine(_userName);
+
+            ActivityLog.Log("Session started for user: " + _userName);
 
             // Show welcome message in the chat
             AddBotMessage("👋 Hello, " + _userName + "! I'm CyberBot — your cybersecurity assistant.\n\nLogic coming soon — stay tuned!");
@@ -121,7 +125,10 @@ namespace CyberSecurityChatbot
 
             // Show the user's message
             AddUserMessage(input);
-            
+
+            //Adds log to the activity log for the chat message sent
+            ActivityLog.Log("Chat message sent: \"" + input + "\"");
+
             // Clear the input box
             InputBox.Clear();
 
@@ -168,6 +175,10 @@ namespace CyberSecurityChatbot
             if (saved)
             {
                 ShowTaskFeedback("✅ Task saved successfully!", true);
+
+                //Adds log when task is saved
+                ActivityLog.Log("Task added: \"" + title + "\"" +
+                (string.IsNullOrWhiteSpace(reminder) ? "" : " | Reminder: " + reminder));
 
                 // Clear the form
                 TaskTitleBox.Clear();
@@ -334,6 +345,7 @@ namespace CyberSecurityChatbot
             if (success)
             {
                 ShowTaskFeedback("✅ Task marked as complete!", true);
+                ActivityLog.Log("Task ID " + taskId + " marked as completed.");
                 LoadTaskList();
             }
             else
@@ -353,6 +365,7 @@ namespace CyberSecurityChatbot
             if (success)
             {
                 ShowTaskFeedback("🗑️ Task deleted.", true);
+                ActivityLog.Log("Task ID " + taskId + " deleted.");
                 LoadTaskList();
             }
             else
@@ -479,6 +492,7 @@ namespace CyberSecurityChatbot
         // Start or restart the quiz
         private void StartQuiz_Click(object sender, RoutedEventArgs e)
         {
+            ActivityLog.Log("Quiz started.");
             // Load and shuffle questions
             _quizQuestions = QuizBank.GetAllQuestions();
             _currentQuestionIndex = 0;
@@ -613,6 +627,9 @@ namespace CyberSecurityChatbot
             int total = _quizQuestions.Count;
             int percentage = (_score * 100) / total;
 
+            ActivityLog.Log("Quiz completed. Score: " + _score + "/" + total +
+                    " (" + percentage + "%)");
+
             // Pick a feedback message based on the score
             string feedback = string.Empty;
 
@@ -642,6 +659,92 @@ namespace CyberSecurityChatbot
             FeedbackBorder.Visibility = Visibility.Collapsed;
 
             _quizActive = false;
+        }
+
+        // ── LOG TAB EVENTS ────────────────────────────────────────────────────
+
+        // Refresh log button clicked
+        private void RefreshLog_Click(object sender, RoutedEventArgs e)
+        {
+            LoadActivityLog();
+        }
+
+        // Clear log button clicked
+        private void ClearLog_Click(object sender, RoutedEventArgs e)
+        {
+            ActivityLog.Clear();
+            LoadActivityLog();
+        }
+
+        // Loads and displays all log entries in the Log tab
+        private void LoadActivityLog()
+        {
+            // Clear the current display
+            LogPanel.Children.Clear();
+
+            List<string> entries = ActivityLog.GetLog();
+
+            // Update the entry counter
+            LogCountText.Text = entries.Count + " entries";
+
+            // Show empty message if no entries
+            if (entries.Count == 0)
+            {
+                TextBlock empty = new TextBlock();
+                empty.Text = "📭 No activity recorded yet.\n" +
+                             "Start chatting, add tasks, or take the quiz!";
+                empty.Foreground = new SolidColorBrush(Color.FromRgb(0x8B, 0x94, 0x9E));
+                empty.FontSize = 13;
+                empty.FontFamily = new FontFamily("Consolas");
+                empty.Margin = new Thickness(8);
+                LogPanel.Children.Add(empty);
+                return;
+            }
+
+            // Build a card for each log entry
+            // Show newest entries at the top by reversing the list
+            List<string> reversed = new List<string>(entries);
+            reversed.Reverse();
+
+            int displayNumber = entries.Count;
+
+            foreach (string entry in reversed)
+            {
+                Border card = new Border();
+                card.Background = new SolidColorBrush(Color.FromRgb(0x1C, 0x23, 0x33));
+                card.CornerRadius = new CornerRadius(6);
+                card.BorderBrush = new SolidColorBrush(Color.FromRgb(0x30, 0x36, 0x3D));
+                card.BorderThickness = new Thickness(1);
+                card.Padding = new Thickness(12, 8, 12, 8);
+                card.Margin = new Thickness(0, 0, 0, 6);
+
+                StackPanel stack = new StackPanel();
+                stack.Orientation = Orientation.Horizontal;
+
+                // Entry number
+                TextBlock number = new TextBlock();
+                number.Text = displayNumber + ". ";
+                number.Foreground = new SolidColorBrush(Color.FromRgb(0x00, 0xD4, 0xFF));
+                number.FontSize = 12;
+                number.FontFamily = new FontFamily("Consolas");
+                number.FontWeight = FontWeights.Bold;
+                number.Margin = new Thickness(0, 0, 6, 0);
+
+                // Entry text
+                TextBlock entryText = new TextBlock();
+                entryText.Text = entry;
+                entryText.Foreground = new SolidColorBrush(Color.FromRgb(0xE6, 0xED, 0xF3));
+                entryText.FontSize = 12;
+                entryText.FontFamily = new FontFamily("Consolas");
+                entryText.TextWrapping = TextWrapping.Wrap;
+
+                stack.Children.Add(number);
+                stack.Children.Add(entryText);
+                card.Child = stack;
+                LogPanel.Children.Add(card);
+
+                displayNumber--;
+            }
         }
     }
  }

@@ -544,7 +544,85 @@
                     </StackPanel>
                 </Grid>
             </TabItem>
+
+            <!-- ══ TAB 4: ACTIVITY LOG ═════════════════════════════════════════════ -->
+            <TabItem Header="📜 Log" Style="{StaticResource TabStyle}">
+                <Grid Margin="12,8,12,8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <!-- Log header -->
+                        <RowDefinition Height="*"/>
+                        <!-- Log entries -->
+                        <RowDefinition Height="Auto"/>
+                        <!-- Buttons -->
+                    </Grid.RowDefinitions>
+
+                    <!-- Log header -->
+                    <Border Grid.Row="0"
+                Background="#161B22"
+                CornerRadius="10"
+                BorderBrush="#30363D"
+                BorderThickness="1"
+                Padding="16,12"
+                Margin="0,0,0,10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="📜 Activity Log"
+                               Foreground="#00D4FF"
+                               FontSize="16"
+                               FontWeight="Bold"
+                               FontFamily="Consolas"/>
+                                <TextBlock Text="A record of actions taken during this session"
+                               Foreground="#8B949E"
+                               FontSize="12"
+                               FontFamily="Consolas"
+                               Margin="0,4,0,0"/>
+                            </StackPanel>
+
+                            <TextBlock x:Name="LogCountText"
+                           Grid.Column="1"
+                           Text="0 entries"
+                           Foreground="#8B949E"
+                           FontSize="12"
+                           FontFamily="Consolas"
+                           VerticalAlignment="Center"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Log entries list -->
+                    <Border Grid.Row="1"
+                Background="#161B22"
+                CornerRadius="10"
+                BorderBrush="#30363D"
+                BorderThickness="1"
+                Padding="12">
+                        <ScrollViewer x:Name="LogScroll"
+                          VerticalScrollBarVisibility="Auto">
+                            <StackPanel x:Name="LogPanel"/>
+                        </ScrollViewer>
+                    </Border>
+
+                    <!-- Buttons -->
+                    <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    Margin="0,10,0,0">
+                        <Button Content="🔄 Refresh Log"
+                    Style="{StaticResource SendBtn}"
+                    Click="RefreshLog_Click"
+                    Margin="0,0,8,0"/>
+                        <Button Content="🗑️ Clear Log"
+                    Style="{StaticResource ActionBtn}"
+                    Click="ClearLog_Click"/>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
         </TabControl>
+
 
         <!-- STATUS BAR -->
         <Border Grid.Row="3"
