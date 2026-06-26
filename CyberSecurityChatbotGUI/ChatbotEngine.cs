@@ -26,11 +26,23 @@ namespace CyberSecurityChatbot
                 return validationError;
             }
 
-            // Step 2 - Detect the user's sentiment e.g. worried, curious
+            // Step 2 - Run NLP intent detection first
+            // This catches natural language requests before keyword matching
+            NlpIntent intent = NlpProcessor.DetectIntent(input);
+            if (intent != NlpIntent.None)
+            {
+                string nlpResponse = NlpProcessor.BuildIntentResponse(intent, input, Memory.UserName);
+                if (nlpResponse != string.Empty)
+                {
+                    return nlpResponse;
+                }
+            }
+
+            // Step 3 - Detect the user's sentiment e.g. worried, curious
             Sentiment sentiment = SentimentDetector.Detect(input);
             string empathy = SentimentDetector.GetEmpathyPrefix(sentiment);
 
-            // Step 3 - Check if the user is expressing an interest in a topic
+            // Step 4 - Check if the user is expressing an interest in a topic
             // e.g. "I'm interested in privacy"
             string learnedTopic = Memory.TryLearnInterest(input);
 
@@ -47,7 +59,7 @@ namespace CyberSecurityChatbot
                 return ack + tip + "\n\n💬 Type 'tell me more' for another tip!";
             }
 
-            // Step 4 - Check for follow-up requests e.g. "tell me more"
+            // Step 5 - Check for follow-up requests e.g. "tell me more"
             if (IsFollowUp(input))
             {
                 if (_lastTopic != string.Empty)
@@ -62,7 +74,7 @@ namespace CyberSecurityChatbot
                 }
             }
 
-            // Step 5 - Check exact match questions e.g. "how are you"
+            // Step 6 - Check exact match questions e.g. "how are you"
             foreach (KeyValuePair<string, string> entry in ResponseBank.ExactResponses)
             {
                 if (input.IndexOf(entry.Key, StringComparison.OrdinalIgnoreCase) >= 0)
@@ -71,13 +83,13 @@ namespace CyberSecurityChatbot
                 }
             }
 
-            // Step 6 - Check for help command
+            // Step 7 - Check for help command
             if (input.Equals("help", StringComparison.OrdinalIgnoreCase))
             {
                 return ResponseBank.HelpResponse;
             }
 
-            // Step 7 - Check for keyword topics e.g. "password", "phishing"
+            // Step 8 - Check for keyword topics e.g. "password", "phishing"
             foreach (KeyValuePair<string, List<string>> entry in ResponseBank.TopicResponses)
             {
                 if (input.IndexOf(entry.Key, StringComparison.OrdinalIgnoreCase) >= 0)
@@ -93,14 +105,14 @@ namespace CyberSecurityChatbot
                 }
             }
 
-            // Step 8 - Check for typos before giving up
+            // Step 9 - Check for typos before giving up
             string typoSuggestion = ErrorHandler.GetTypoSuggestion(input);
             if (typoSuggestion != string.Empty)
             {
                 return typoSuggestion;
             }
 
-            // Step 9 - Nothing matched, return a random fallback message
+            // Step 10 - Nothing matched, return a random fallback message
             return ErrorHandler.GetFallback();
         }
 
