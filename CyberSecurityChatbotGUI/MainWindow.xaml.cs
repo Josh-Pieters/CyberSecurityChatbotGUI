@@ -15,6 +15,12 @@ namespace CyberSecurityChatbot
         // Stores the user's name entered in the dialog
         private string _userName = string.Empty;
         private ChatbotEngine _engine = null!;
+        // Quiz state fields
+        private List<QuizQuestion> _quizQuestions = new List<QuizQuestion>();
+        private int _currentQuestionIndex = 0;
+        private int _score = 0;
+        private bool _quizActive = false;
+        private bool _answerSelected = false;
 
         public MainWindow()
         {
@@ -467,5 +473,175 @@ namespace CyberSecurityChatbot
             DoubleAnimation fade = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(250));
             bubble.BeginAnimation(UIElement.OpacityProperty, fade);
         }
+
+        // ── QUIZ TAB EVENTS ──────────────────────────────────────────────────
+
+        // Start or restart the quiz
+        private void StartQuiz_Click(object sender, RoutedEventArgs e)
+        {
+            // Load and shuffle questions
+            _quizQuestions = QuizBank.GetAllQuestions();
+            _currentQuestionIndex = 0;
+            _score = 0;
+            _quizActive = true;
+            _answerSelected = false;
+
+            // Update UI
+            StartQuizBtn.Content = "🔄 Restart Quiz";
+            NextQuestionBtn.Visibility = Visibility.Collapsed;
+            FeedbackBorder.Visibility = Visibility.Collapsed;
+
+            // Show first question
+            ShowQuestion(_currentQuestionIndex);
+        }
+
+        // Shows the question at the given index
+        private void ShowQuestion(int index)
+        {
+            if (index >= _quizQuestions.Count)
+            {
+                ShowFinalScore();
+                return;
+            }
+
+            QuizQuestion question = _quizQuestions[index];
+            _answerSelected = false;
+
+            // Update question text and counter
+            QuestionText.Text = question.QuestionText;
+            QuestionCounter.Text = "Question " + (index + 1) + " of " + _quizQuestions.Count;
+            QuizSubtitle.Text = question.Type == QuestionType.TrueFalse
+                ? "True / False Question"
+                : "Multiple Choice Question";
+
+            // Hide feedback and next button
+            FeedbackBorder.Visibility = Visibility.Collapsed;
+            NextQuestionBtn.Visibility = Visibility.Collapsed;
+
+            // Clear old answer buttons and build new ones
+            AnswerPanel.Children.Clear();
+
+            foreach (string option in question.Options)
+            {
+                Button answerBtn = new Button();
+                answerBtn.Content = option;
+                answerBtn.Tag = option.Substring(0, 1); // Store just "A", "B", "C" or "D"
+                answerBtn.Style = (Style)FindResource("ActionBtn");
+                answerBtn.Foreground = new SolidColorBrush(Color.FromRgb(0xE6, 0xED, 0xF3));
+                answerBtn.FontSize = 13;
+                answerBtn.FontFamily = new FontFamily("Consolas");
+                answerBtn.HorizontalAlignment = HorizontalAlignment.Stretch;
+                answerBtn.HorizontalContentAlignment = HorizontalAlignment.Left;
+                answerBtn.Margin = new Thickness(0, 0, 0, 6);
+                answerBtn.Padding = new Thickness(14, 10, 14, 10);
+                answerBtn.Click += AnswerBtn_Click;
+                AnswerPanel.Children.Add(answerBtn);
+            }
+        }
+
+        // Answer button clicked
+        private void AnswerBtn_Click(object sender, RoutedEventArgs e)
+        {
+            // Prevent answering twice
+            if (_answerSelected)
+                return;
+
+            _answerSelected = true;
+
+            Button clickedBtn = (Button)sender;
+            string selectedAnswer = clickedBtn.Tag.ToString();
+            QuizQuestion question = _quizQuestions[_currentQuestionIndex];
+
+            bool isCorrect = selectedAnswer == question.CorrectAnswer;
+
+            if (isCorrect)
+                _score++;
+
+            // Update score display
+            ScoreText.Text = "Score: " + _score + " / " + _quizQuestions.Count;
+
+            // Colour the clicked button green or red
+            clickedBtn.Background = isCorrect
+                ? new SolidColorBrush(Color.FromRgb(0x1A, 0x3A, 0x2A))
+                : new SolidColorBrush(Color.FromRgb(0x3A, 0x1A, 0x1A));
+
+            clickedBtn.BorderBrush = isCorrect
+                ? new SolidColorBrush(Color.FromRgb(0x39, 0xD3, 0x53))
+                : new SolidColorBrush(Color.FromRgb(0xFF, 0x6B, 0x6B));
+
+            // Highlight the correct answer if they got it wrong
+            if (!isCorrect)
+            {
+                foreach (Button btn in AnswerPanel.Children)
+                {
+                    if (btn.Tag.ToString() == question.CorrectAnswer)
+                    {
+                        btn.Background = new SolidColorBrush(Color.FromRgb(0x1A, 0x3A, 0x2A));
+                        btn.BorderBrush = new SolidColorBrush(Color.FromRgb(0x39, 0xD3, 0x53));
+                    }
+                }
+            }
+
+            // Show feedback
+            string resultPrefix = isCorrect ? "✅ Correct! " : "❌ Incorrect. ";
+            FeedbackText.Text = resultPrefix + question.Explanation;
+            FeedbackText.Foreground = isCorrect
+                ? new SolidColorBrush(Color.FromRgb(0x39, 0xD3, 0x53))
+                : new SolidColorBrush(Color.FromRgb(0xFF, 0x6B, 0x6B));
+            FeedbackBorder.Visibility = Visibility.Visible;
+
+            // Show next button
+            bool isLastQuestion = _currentQuestionIndex == _quizQuestions.Count - 1;
+            NextQuestionBtn.Content = isLastQuestion ? "See Results 🏆" : "Next ➤";
+            NextQuestionBtn.Visibility = Visibility.Visible;
+        }
+
+        // Next question button clicked
+        private void NextQuestion_Click(object sender, RoutedEventArgs e)
+        {
+            _currentQuestionIndex++;
+
+            if (_currentQuestionIndex >= _quizQuestions.Count)
+                ShowFinalScore();
+            else
+                ShowQuestion(_currentQuestionIndex);
+        }
+
+        // Shows the final score screen
+        private void ShowFinalScore()
+        {
+            int total = _quizQuestions.Count;
+            int percentage = (_score * 100) / total;
+
+            // Pick a feedback message based on the score
+            string feedback = string.Empty;
+
+            if (percentage == 100)
+                feedback = "🏆 Perfect score! You're a cybersecurity expert!";
+            else if (percentage >= 80)
+                feedback = "🌟 Great job! You have strong cybersecurity knowledge!";
+            else if (percentage >= 60)
+                feedback = "👍 Good effort! Keep learning to stay safe online.";
+            else if (percentage >= 40)
+                feedback = "📚 Keep studying! Cybersecurity knowledge is important.";
+            else
+                feedback = "💪 Don't give up! Review the topics and try again.";
+
+            // Display final results
+            QuestionText.Text = "Quiz Complete!\n\n" +
+                                "Your Score: " + _score + " out of " + total + "\n" +
+                                "Percentage: " + percentage + "%\n\n" +
+                                feedback;
+
+            QuizSubtitle.Text = "Quiz finished!";
+            QuestionCounter.Text = "All " + total + " questions answered";
+
+            // Clear answer buttons and hide next button
+            AnswerPanel.Children.Clear();
+            NextQuestionBtn.Visibility = Visibility.Collapsed;
+            FeedbackBorder.Visibility = Visibility.Collapsed;
+
+            _quizActive = false;
+        }
     }
-}
+ }
